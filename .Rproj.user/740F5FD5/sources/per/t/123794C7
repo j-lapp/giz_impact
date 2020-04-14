@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1586068511254.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1253075139",
+    "id" : "123794C7",
+    "lastKnownWriteTime" : 1586765295,
+    "last_content_update" : 1586765295155,
+    "path" : "C:/Users/REACH IRAQ GIS/Desktop/R/GIZ/giz_impact/R/run_analysis_endline.R",
+    "project_path" : "R/run_analysis_endline.R",
+    "properties" : {
+        "cursorPosition" : "10,74",
+        "scrollLine" : "0",
+        "tempName" : "Untitled2"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

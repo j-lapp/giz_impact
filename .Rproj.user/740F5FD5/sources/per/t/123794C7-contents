@@ -1,0 +1,69 @@
+
+source("R/functions/small_function.r")
+source("R/functions/surveymodule.r")
+
+session<-"GIZ_2020_endline"
+lang="english"
+
+
+library(dplyr);library(scales);library(readxl);library(srvyr)
+
+##########################################################################################
+####### ENDLINE #########
+# get the data
+data <- read.csv("input/data/recoded/endline/giz_endline_recoded_data.csv",check.names=F)
+names(data) <- gsub(x = names(data), pattern = "\\.", replacement = "/")
+
+# Load Analysis Plan
+log <- read_excel("input/analysisplan/endline/GIZ_IE_analysis plan_all indicators_R_correct order.xlsx")
+log$analysis_key<-paste0(log$xi,"/",log$yi)
+
+
+questions <- read_excel("input/questionnaire/endline/REACH_IRQ_GIZ_HH_survey_FINAL.xlsx", sheet = 'survey')
+choices   <- read_excel("input/questionnaire/endline/REACH_IRQ_GIZ_HH_survey_FINAL.xlsx", sheet = 'choices')
+
+sampling_frame <- read.csv("input/sampling_frame/GIZ_sampling_frame_endline.csv")
+
+data <- create_weights(sampling_frame, data)
+
+# export to check weights
+write.csv(data,"input/data/data_w_weight_endline.csv")
+
+# load the parameters
+analysis.params<-parametres(data,log,questions=questions,choices=choices,lang=lang)
+check_param(analysis.params)
+
+
+##########################################################################################
+# process the results
+results<-lapply(seq_along(analysis.params$xi),boom_rmd,params=analysis.params)
+check_create_directory("RDS")
+saveRDS(results,sprintf("RDS/endline/results_for_request_%s_%s_%s.RDS",today(),lang,session))
+
+
+##########################################################################################
+# extract the data results
+data_results<- lapply(results, function(x){x$data}) %>% do.call(rbind.fill,.)
+write.csv(data_results,sprintf("results/endline/GIZ_AnalysisResults_longformat_%s_endline.csv",today()), row.names = FALSE)
+
+
+##########################################################################################
+# create data merge
+source("R/functions/function_data_merge.R")
+check_create_directory("datamerge")
+
+mergelevel<-unique(log$yi)
+
+lapply(mergelevel,function(mergelevel,data_results){
+  torank <- NULL
+  
+# extract results for chosen level
+  res<-data_results[data_results$yi==mergelevel,]
+  datamerge<-create_the_data_merge(results=res,label="variable_label",vartorank=torank)
+  datamerge$level<-mergelevel
+  return(datamerge)
+},data_results=data_results) %>% bind_rows -> datamerge
+
+write.csv(datamerge,sprintf("datamerge/endline/datamerge_format_%s_endline.csv",today()), row.names = FALSE)
+
+
